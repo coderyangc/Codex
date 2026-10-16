@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.log
+*.adb_error.log
+reports/
+dist/
+build/
+*.exe
