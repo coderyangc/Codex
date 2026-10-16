@@ -1,0 +1,65 @@
+﻿field,chinese_name,data_scope,metric_type,unit,description,calculation,source,limitations,display_switch
+timestamp,时间戳,公共/状态,标识/元数据,—,采样发生时 Android 设备的本地时间,每个采样点调用 date 读取 Android 设备本地时间；格式为 ISO 风格时间戳。,date,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,固定输出
+elapsed_s,已运行时长,公共/状态,标识/元数据,秒,从本次采集开始计算的已运行时间,当前时间减去采集开始时间，单位秒；不是 App 自身运行时长。,采集脚本,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,固定输出
+package,应用包名,公共/状态,标识/元数据,—,被监控的 Android 应用包名,来自 --package/--packages 参数；每个包名单独输出采样行。,采集参数,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,固定输出
+process_count,进程数量,应用级,应用性能,个,目标包名及其子进程的数量,在 ps 结果中匹配包名及其子进程名后的 PID 数量。,ps,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_PROCESS + DISPLAY_PROCESS_COUNT
+pids,进程 PID,应用级,标识/元数据,—,目标应用及子进程的进程号，多个 PID 使用竖线分隔,将匹配到的 PID 按竖线拼接；空值表示采样时未发现目标进程。,ps,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_PROCESS + DISPLAY_PROCESS_PIDS
+main_pid,主进程 PID,应用级,标识/元数据,—,用于主线程和线程数观测的首个目标进程号,取匹配结果中的首个 PID 作为主进程观测对象；不等同于 Android UI 主线程 TID。,ps,首个匹配 PID 是脚本的主进程近似，不保证等于应用清单定义的主进程。,DISPLAY_PROCESS + DISPLAY_PROCESS_MAIN_PID
+thread_count,线程数量,应用级,应用性能,个,主进程当前线程数量,统计主进程 /proc/<pid>/task 下的线程目录数量。,/proc/pid/task,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_PROCESS + DISPLAY_PROCESS_THREAD_COUNT
+cpu_pct_all_cores,CPU 占用率（整机总算力）,应用级,应用性能,%,应用 CPU ticks 占设备所有 CPU 核心总 ticks 的比例,约等于 100 × App 进程 CPU ticks 增量 ÷ 设备全部 CPU ticks 增量；反映 App 占整机总算力比例。,/proc/stat、/proc/pid/stat,首次采样没有前一时刻基线时为空；受进程短暂退出和 Android 权限影响。,DISPLAY_CPU + DISPLAY_CPU_PCT_ALL_CORES
+cpu_pct_one_core,CPU 占用率（单核标准）,应用级,应用性能,%,将整机总算力占用率换算为单核 100% 标准,约等于 cpu_pct_all_cores × 设备 CPU 核心数；将单个核心满载定义为 100%。,/proc/stat、/proc/pid/stat,首次采样没有前一时刻基线时为空；核心数为设备逻辑 CPU 数的近似。,DISPLAY_CPU + DISPLAY_CPU_PCT_ONE_CORE
+main_thread_cpu_pct,主进程 CPU（字段名 main_thread_cpu_pct）,应用级,应用性能,%,当前实现读取首个目标主进程的 CPU ticks；包含该主进程下线程的合计，不是单独 UI 主线程占用率,当前实现约等于主进程 CPU ticks 增量 ÷ 设备全部 CPU ticks 增量 × 核心数；统计主进程合计，不是单独 UI 主线程。,/proc/pid/stat,字段名沿用历史命名；当前不读取单独主线程 TID，不能用于严格 UI 主线程瓶颈判断。,DISPLAY_CPU + DISPLAY_MAIN_THREAD_CPU_PCT
+rss_mb,RSS 内存,应用级,应用性能,MB,目标进程常驻物理内存总量,对目标进程逐个读取 VmRSS，多个进程求和后由 KB 除以 1024，保留两位小数。,/proc/pid/status，KB 转换为 MB,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_MEMORY + DISPLAY_MEMORY_RSS
+pss_mb,PSS 内存,应用级,应用性能,MB,按共享内存比例分摊后的应用内存占用,读取 dumpsys meminfo 的 TOTAL PSS，按 KB 除以 1024 转换为 MB。,dumpsys meminfo，KB 转换为 MB,dumpsys meminfo 格式和权限随 Android 版本变化；空值不等于 0。,DISPLAY_MEMORY + DISPLAY_MEMORY_PSS
+java_heap_mb,Java Heap,应用级,应用性能,MB,Java 堆内存占用,读取 dumpsys meminfo 的 Java Heap，按 KB 除以 1024 转换为 MB。,dumpsys meminfo，KB 转换为 MB,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_MEMORY + DISPLAY_MEMORY_JAVA_HEAP
+native_heap_mb,Native Heap,应用级,应用性能,MB,Native 堆内存占用,读取 dumpsys meminfo 的 Native Heap，按 KB 除以 1024 转换为 MB。,dumpsys meminfo，KB 转换为 MB,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_MEMORY + DISPLAY_MEMORY_NATIVE_HEAP
+code_mb,Code 内存,应用级,应用性能,MB,代码段及相关映射占用,读取 dumpsys meminfo 的 Code 区域，按 KB 除以 1024 转换为 MB。,dumpsys meminfo，KB 转换为 MB,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_MEMORY + DISPLAY_MEMORY_CODE
+graphics_mb,Graphics 内存,应用级,应用性能,MB,图形相关内存占用,读取 dumpsys meminfo 的 Graphics 区域，按 KB 除以 1024 转换为 MB。,dumpsys meminfo，KB 转换为 MB,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_MEMORY + DISPLAY_MEMORY_GRAPHICS
+stack_mb,Stack 内存,应用级,应用性能,MB,栈内存占用,读取 dumpsys meminfo 的 Stack 区域，按 KB 除以 1024 转换为 MB。,dumpsys meminfo，KB 转换为 MB,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_MEMORY + DISPLAY_MEMORY_STACK
+disk_read_Bps,磁盘读取速率,应用级,应用性能,B/s,相邻采样期间的进程磁盘读取平均速率,相邻采样点 read_bytes 的增量 ÷ 采样间隔秒数；单位 B/s。,/proc/pid/io,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_DISK_IO + DISPLAY_DISK_READ_BPS
+disk_write_Bps,磁盘写入速率,应用级,应用性能,B/s,相邻采样期间的进程磁盘写入平均速率,相邻采样点 write_bytes 的增量 ÷ 采样间隔秒数；单位 B/s。,/proc/pid/io,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_DISK_IO + DISPLAY_DISK_WRITE_BPS
+io_read_bytes,累计磁盘读取量,应用级,应用性能,字节,目标进程从采集开始前后累计读取的字节数,目标进程 read_bytes 的累计值，多个目标进程求和；单位字节。,/proc/pid/io,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_DISK_IO + DISPLAY_IO_READ_BYTES
+io_write_bytes,累计磁盘写入量,应用级,应用性能,字节,目标进程从采集开始前后累计写入的字节数,目标进程 write_bytes 的累计值，多个目标进程求和；单位字节。,/proc/pid/io,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_DISK_IO + DISPLAY_IO_WRITE_BYTES
+network_uid,应用 UID,应用级,标识/元数据,—,应用在 Android 上对应的 Linux UID,按采样点从 Android 端读取或汇总；空值表示当前采样未读到有效值。,dumpsys package,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_NETWORK + DISPLAY_NETWORK_UID
+network_rx_Bps,网络接收速率,应用级,应用性能,B/s,应用 UID 的相邻采样接收速率，依赖 xt_qtaguid,应用 UID 网络接收累计值的相邻采样增量 ÷ 采样间隔；单位 B/s。,/proc/net/xt_qtaguid/stats,现代 Android 版本可能移除 xt_qtaguid，统计可能为空。,DISPLAY_NETWORK + DISPLAY_NETWORK_RX_BPS
+network_tx_Bps,网络发送速率,应用级,应用性能,B/s,应用 UID 的相邻采样发送速率，依赖 xt_qtaguid,应用 UID 网络发送累计值的相邻采样增量 ÷ 采样间隔；单位 B/s。,/proc/net/xt_qtaguid/stats,现代 Android 版本可能移除 xt_qtaguid，统计可能为空。,DISPLAY_NETWORK + DISPLAY_NETWORK_TX_BPS
+network_rx_bytes,累计网络接收量,应用级,应用性能,字节,应用 UID 的累计接收字节数,应用 UID 在 xt_qtaguid 统计中的累计接收字节数。,/proc/net/xt_qtaguid/stats,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_NETWORK + DISPLAY_NETWORK_RX_BYTES
+network_tx_bytes,累计网络发送量,应用级,应用性能,字节,应用 UID 的累计发送字节数,应用 UID 在 xt_qtaguid 统计中的累计发送字节数。,/proc/net/xt_qtaguid/stats,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_NETWORK + DISPLAY_NETWORK_TX_BYTES
+network_type,网络类型,设备级,设备环境,—,当前系统网络类型，例如 WIFI；设备格式不同可能为空,从 dumpsys connectivity 解析当前设备网络类型；不是 App 独占网络类型。,dumpsys connectivity,设备网络上下文，不代表 App 的实际每连接网络类型。,DISPLAY_NETWORK + DISPLAY_NETWORK_TYPE
+battery_level_pct,电池电量,设备级,设备环境,%,设备当前电池百分比,直接读取 dumpsys battery 的 level 字段，单位百分比。,dumpsys battery,设备级电量，不是目标 App 电量。,DISPLAY_BATTERY + DISPLAY_BATTERY_LEVEL_PCT
+battery_status,充电状态,设备级,状态,—,设备当前电池状态码,直接读取 dumpsys battery 的 status 字段，通常为 Android 状态码。,dumpsys battery,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_BATTERY + DISPLAY_BATTERY_STATUS
+battery_temperature_c,电池温度,设备级,设备环境,°C,设备电池温度,读取电池温度原始值（通常为 0.1°C），除以 10 转换为 °C。,dumpsys battery,设备电池温度，不是目标 App 或 CPU 温度。,DISPLAY_BATTERY + DISPLAY_BATTERY_TEMPERATURE_C
+battery_voltage_mv,电池电压,设备级,设备环境,mV,设备电池电压,直接读取 dumpsys battery 的 voltage 字段，单位 mV。,dumpsys battery,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_BATTERY + DISPLAY_BATTERY_VOLTAGE_MV
+battery_current_ua,电池电流,设备级,设备环境,μA,设备当前电流，部分 Android 版本不提供,读取 dumpsys battery 的 current now 字段，单位 μA；部分版本没有该字段。,dumpsys battery,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_BATTERY + DISPLAY_BATTERY_CURRENT_UA
+app_power_mah,应用耗电量,应用级,应用性能,mAh,batterystats 可读取时的应用估算耗电量,从 batterystats 读取按包名过滤的耗电估算；通常是统计周期累计值，不是瞬时功率。,dumpsys batterystats,依赖 batterystats 权限和 Android 实现，精度低于专用功耗分析工具。,DISPLAY_BATTERY + DISPLAY_APP_POWER_MAH
+max_thermal_temp_c,最高热区温度,设备级,设备环境,°C,可读取 thermal zone 中的最高温度，不等同于 CPU 温度,遍历可读 thermal zone，取最大温度原始值并除以 1000；不代表某个 App 的温度。,/sys/class/thermal,热区名称未绑定到 CPU/GPU/App，不能归因到目标 App。,DISPLAY_THERMAL + DISPLAY_MAX_THERMAL_TEMP_C
+thermal_status,热限制状态,设备级,状态,—,系统 thermalservice 状态码,读取 thermalservice 的系统热限制状态码。,dumpsys thermalservice,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_THERMAL + DISPLAY_THERMAL_STATUS
+frames_total,总渲染帧数,应用级,图形/UI,帧,gfxinfo 返回的累计渲染帧数,从 gfxinfo 读取 Total frames rendered 字段；通常是清理以来的累计值。,dumpsys gfxinfo,gfxinfo 通常是累计值，可能受系统版本和清理时机影响。,DISPLAY_UI + DISPLAY_FRAMES_TOTAL
+janky_frames,卡顿帧数,应用级,图形/UI,帧,gfxinfo 返回的累计卡顿帧数,从 gfxinfo 读取 Janky frames 字段；通常是清理以来的累计值。,dumpsys gfxinfo,gfxinfo 格式可能变化；累计值不等同于本采样区间新增卡顿帧。,DISPLAY_UI + DISPLAY_JANKY_FRAMES
+jank_pct,卡顿比例,应用级,图形/UI,%,gfxinfo 返回的卡顿帧比例,从 gfxinfo 读取 Janky frames 括号中的百分比。,dumpsys gfxinfo,gfxinfo 格式可能变化；无有效数据时留空，不能解释为 0% 卡顿。,DISPLAY_UI + DISPLAY_JANK_PCT
+app_data_kb,应用数据占用,应用级,存储,KB,应用数据目录占用空间,通过应用 dataDir 执行 du -sk，单位 KB。,dumpsys package、du,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_STORAGE + DISPLAY_APP_DATA_KB
+apk_kb,APK 占用,应用级,存储,KB,应用 APK 文件占用空间总和,通过 pm path 获取 APK 路径，对各 APK 执行 du -k 后求和，单位 KB。,pm path、du,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_STORAGE + DISPLAY_APK_KB
+app_storage_kb,应用总存储,应用级,存储,KB,应用数据占用与 APK 占用之和,app_data_kb 与 apk_kb 之和；单位 KB。,计算值,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_STORAGE + DISPLAY_APP_STORAGE_KB
+foreground,前后台状态,应用运行状态,运行状态,0/1,1=当前恢复的 Activity 属于目标包，0=不在前台,当前恢复的 Activity 包名等于目标包名时为 1，否则为 0。,dumpsys activity,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_STARTUP + DISPLAY_FOREGROUND
+foreground_transition,前后台切换,应用运行状态,运行状态,—,当前采样点发生 foreground 或 background 切换,当前前台值与上一采样点不同才输出 foreground 或 background，否则为空。,dumpsys activity,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_STARTUP + DISPLAY_FOREGROUND_TRANSITION
+first_process_seen_s,首次发现进程耗时,应用运行状态,运行状态,秒,从采集开始到首次发现目标进程的时间，不等同于启动耗时,采集开始到首次发现目标进程的时间；不能单独证明是启动耗时。,采集脚本,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_STARTUP + DISPLAY_FIRST_PROCESS_SEEN_S
+first_foreground_seen_s,首次进入前台耗时,应用运行状态,运行状态,秒,从采集开始到首次发现目标包在前台的时间,采集开始到首次发现目标包进入前台的时间。,dumpsys activity,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_STARTUP + DISPLAY_FIRST_FOREGROUND_SEEN_S
+startup_observed_s,启动观测耗时,应用运行状态,运行状态,秒,使用 --launch cold/hot 时的首次前台观测时间，按采样粒度近似,使用 --launch cold/hot 时记录首次前台观测时间，受采样间隔影响。,采集脚本、dumpsys activity,按采样粒度近似，不等同于首帧、首屏或端到端启动耗时。,DISPLAY_STARTUP + DISPLAY_STARTUP_OBSERVED_S
+startup_status,启动测量状态,应用运行状态,状态,—,observed=使用启动模式；not_launched=未主动启动；not_observed=未观测到前台,none 模式为 not_launched；cold/hot 模式观测到前台为 observed，否则为 not_observed。,采集脚本,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_STARTUP + DISPLAY_STARTUP_STATUS
+crash_count,崩溃次数,应用运行状态,运行状态,次,本次采集期间从 Logcat 事件中观察到的崩溃计数,以采集开始前 Logcat 计数为基线，统计采集期间目标包新增的崩溃关键字数量。,logcat,基于 Logcat 关键字匹配，可能漏报或重复，不等同于系统完整崩溃统计。,DISPLAY_STABILITY + DISPLAY_CRASH_COUNT
+anr_count,ANR 次数,应用运行状态,运行状态,次,本次采集期间从 Logcat 事件中观察到的 ANR 计数,以采集开始前 Logcat 计数为基线，统计采集期间目标包新增的 ANR 关键字数量。,logcat,基于 Logcat 关键字匹配，可能漏报或重复，不等同于系统完整 ANR 统计。,DISPLAY_STABILITY + DISPLAY_ANR_COUNT
+logcat_error_count,Logcat 错误数,应用运行状态,运行状态,条,当前 Logcat 中匹配目标包的错误、异常、崩溃或 ANR 行数,统计当前 Logcat 中按目标包名过滤的 error/exception/fatal/crash/anr 等匹配行数。,logcat,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_STABILITY + DISPLAY_LOGCAT_ERROR_COUNT
+system_cpu_pct,整机 CPU 占用率,设备级,设备环境,%,设备所有 CPU 核心合计的系统 CPU 占用率,约等于 100 × 设备非空闲 CPU ticks 增量 ÷ 设备总 CPU ticks 增量；整机口径。,/proc/stat,这是整机上下文，不是目标 App CPU；首次采样通常为空。,DISPLAY_SYSTEM + DISPLAY_SYSTEM_CPU_PCT
+system_load_1m,系统 1 分钟负载,设备级,设备环境,,设备 /proc/loadavg 的 1 分钟负载值,读取 /proc/loadavg 第一列；表示设备 1 分钟负载，不是 CPU 百分比。,/proc/loadavg,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_SYSTEM + DISPLAY_SYSTEM_LOAD_1M
+system_mem_total_mb,整机总内存,设备级,设备环境,MB,设备总内存,读取 MemTotal 的 KB 后除以 1024，转换为 MB。,/proc/meminfo，KB 转换为 MB,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_SYSTEM + DISPLAY_SYSTEM_MEM_TOTAL_MB
+system_mem_available_mb,整机可用内存,设备级,设备环境,MB,设备当前可用内存,读取 MemAvailable 的 KB 后除以 1024，转换为 MB。,/proc/meminfo，KB 转换为 MB,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_SYSTEM + DISPLAY_SYSTEM_MEM_AVAILABLE_MB
+system_storage_free_kb,整机可用存储,设备级,设备环境,KB,/data 分区可用空间,读取 /data 分区可用空间；单位 KB。,df,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_SYSTEM + DISPLAY_SYSTEM_STORAGE_FREE_KB
+adb_state,ADB 状态,公共/状态,状态,—,当前 Android 端脚本仍在运行即记录为 connected；主机断连会停止新增行,Android 端脚本仍能输出采样行时记录 connected；不是 USB 链路质量评分。,ADB,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_ADB_STATE
+status,采集状态,公共/状态,状态,—,ok=正常；partial=部分指标不可读；no_process=应用未运行,进程存在且主要数据可读为 ok；无目标进程为 no_process；部分指标不可读时为 partial。,采集脚本,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_STATUS
+device_serial,设备序列号,设备级,标识/元数据,—,Android 系统属性中的设备序列号，部分系统可能限制读取,按采样点从 Android 端读取或汇总；空值表示当前采样未读到有效值。,getprop,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_DEVICE + DISPLAY_DEVICE_SERIAL
+device_manufacturer,设备厂商,设备级,标识/元数据,—,设备制造商名称,按采样点从 Android 端读取或汇总；空值表示当前采样未读到有效值。,getprop,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_DEVICE + DISPLAY_DEVICE_MANUFACTURER
+device_brand,设备品牌,设备级,标识/元数据,—,设备品牌名称,按采样点从 Android 端读取或汇总；空值表示当前采样未读到有效值。,getprop,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_DEVICE + DISPLAY_DEVICE_BRAND
+device_model,设备型号,设备级,标识/元数据,—,设备型号名称,按采样点从 Android 端读取或汇总；空值表示当前采样未读到有效值。,getprop,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_DEVICE + DISPLAY_DEVICE_MODEL
+android_version,Android 版本,设备级,标识/元数据,—,Android 系统版本号,按采样点从 Android 端读取或汇总；空值表示当前采样未读到有效值。,getprop,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_DEVICE + DISPLAY_ANDROID_VERSION
+android_sdk,Android SDK,设备级,标识/元数据,级别,Android SDK API Level,按采样点从 Android 端读取或汇总；空值表示当前采样未读到有效值。,getprop,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_DEVICE + DISPLAY_ANDROID_SDK
+build_id,系统 Build ID,设备级,标识/元数据,—,Android 系统构建版本标识,按采样点从 Android 端读取或汇总；空值表示当前采样未读到有效值。,getprop,受 Android 版本、权限策略、进程状态或命令输出格式影响；空值不等于 0。,DISPLAY_DEVICE + DISPLAY_BUILD_ID
